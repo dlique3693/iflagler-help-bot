@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM-Powered Class Help Bot</title>
+    <!-- Use Tailwind CSS for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            max-width: 420px;
+            margin: 0 auto;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            background-color: #ffffff;
+        }
+
+        .chat-header {
+            background-color: #6366f1;
+            color: white;
+            padding: 1.5rem;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background-color: #f9fafb;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-input {
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            background-color: #ffffff;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .bot-message {
+            background-color: #e5e7eb;
+            color: #1f2937;
+            align-self: flex-start;
+            border-top-left-radius: 0.5rem;
+        }
+
+        .user-message {
+            background-color: #6366f1;
+            color: #ffffff;
+            align-self: flex-end;
+            border-top-right-radius: 0.5rem;
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #9ca3af;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        .typing-indicator span:nth-child(3) { animation-delay: -0.08s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 640px) {
+            .chat-container {
+                border-radius: 0;
+            }
+            .chat-header {
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+
+    <div class="chat-container">
+        <!-- Chatbot Header -->
+        <div class="chat-header">
+            <div class="flex items-center space-x-3">
+                <i class="fas fa-robot text-2xl"></i>
+                <div>
+                    <h1 class="text-xl font-bold">LLM-Powered Class Help Bot</h1>
+                    <p class="text-sm font-light">Ask me anything about the class!</p>
+                </div>
+            </div>
+            <button id="toggle-chat-btn" class="text-white text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Chat Messages Area -->
+        <div id="chat-messages" class="chat-messages">
+            <!-- Messages will be injected here by JavaScript -->
+        </div>
+
+        <!-- User Input Area -->
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type your question..."
+                   class="flex-grow p-3 rounded-full bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200">
+            <button id="send-btn"
+                    class="ml-3 p-3 bg-indigo-600 text-white rounded-full transition-colors duration-200 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- Core Chatbot Logic with LLM Integration ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get references to DOM elements
+            const chatMessages = document.getElementById('chat-messages');
+            const userInput = document.getElementById('user-input');
+            const sendBtn = document.getElementById('send-btn');
+            const toggleChatBtn = document.getElementById('toggle-chat-btn');
+            const chatContainer = document.querySelector('.chat-container');
+            
+            // The entire knowledge base is now a single string
+            const knowledgeBase = `To access passwords for my class, the student must first complete their DBA. If they have completed the DBA, they can find the password in the feedback of the DBA. The feedback of the DBA can be found by going to your gradebook and then clicking on the assignment. Most assignments and quizzes can be redone to improve grades. A quiz can be reset on your own by going through gradebook and clicking on the assignment. If the quiz has already been taken three times then the student needs to contact the teacher. If a student failed a module exam they can use the link on the homepage to request a reset of the exam. Segment exams cannot be reset and must have a grade of a 60% or higher to pass the class. If a module exam grade is below a 60% then the student must complete the test correction form which is located on the class homepage. If a student needs an appointment for help or a dba or something else they will use the link on the homepage to make the appointment. The homepage also contains a link to the google meet room. Students will refer to the pace guide which is located below the homepage to determine which assignment the student should be on. After a certain period of time assignments that are past the due date will become a 0, students can still complete the assignment for full credit but they must go to the gradebook to access the assignment as it will disappear from the assessment list. Assignments within the FLVS platform are either quizzes or written work. For quizzes, you simply click on assessments and then click the quiz to take it. For written assignments, there is usually a worksheet or directions, those will be located on the very last page of the lesson. Most of the time you will see a link to download a worksheet, you will then fill out the worksheet and then go to your assessments and upload the assignment. To upload the assignment you will scroll near the bottom and either click and drag the assignment into the white box or click the upload button and select it, most will be in your download folder unless you moved it. If a student received a 0 and the feedback states something along the line of contact instructor or please contact me, then the student has a potential Academic integrity violation, meaning the work they submitted may not be all original and will likely need to be redone. Texting is best to get in touch with Mr. Lique, the number is 386-361-8505. Here is a link for the google meet room https://meet.google.com/vur-ueqj-bwa. Here is a link to make an appointment https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ3Nor_Efm5QZfHLthR8kPXSN3WvWUqug3QTZB9W0p3_k__17Oa1yPYuU_oA25KnFw1suBi-TdX-. A trending student is a student that has been doing fantastic lately and is on a roll. A pretest has such a low value that it will not affect a students grade, a reset is not needed for it. If the only grade is a pretest then the students grade will appear very low but that will go away once they start completing other assignments. Mr. Liques favorite music is twenty one pilots and his favorite video game is overwatch. Many of the more difficult assignments have help videos already created by Mr. Lique which you can ask for or simply make an appointment and he will help you out. Mr. Lique will do same day appointments. If you have an assignment that has a discussion with other students, you need to access that by clicking tools and then discussion group. If a student starts falling behind pace, the student needs to reach out to me ASAP, I can create a custom pace chart as well as other ideas and plans to get them back on pace. A DBA is a discussion based assessment, students will reach certain checkpoints within the course, students usually do the DBA once they have finished all assignments in the module, other than the module exam, there are some exceptions for certain courses so check the pace guide for sure. When a student is due for their DBA they will need to make an appointment, at the time selected for their appointment they will either call the teacher or join the google meet room. During the DBA the student and teacher will discuss what they learned in the current module, students must achieve a 60% or higher to be able to receive the password and continue with the course. DBAs with Mr. Lique are very laid back, he gives you lots of options and open ended questions, its very stress free, students are welcome to use their own notes. Students are encouraged to take note as they go through each lesson, they can either take their own notes or even better would be to use the built in guided notes. Most often the there is a link to access the guided notes at the beginning of each lesson, on the first page. They can download and fill out the notes on their computer by typing or if they prefer they can print it out and write it by hand. Having notes is very important not just for the DBA but quizzes and exams, students can uses their notes on the module exams. If we lose instructional days due to a hurricane, you will still need to maintain the current pace based on the pace guide on my homepage, the exception would be if the district extends the semester. If you started school late, you are still responsible to complete all assignments. It is recommended that you complete 1 extra assignment per week or more until you are caught up. If you are in honors/advanced and which to switch to regular class or vice versa, please contact Ms. Wolcott at 386-447-1520, extension 1705. If you get a questions that this chat box does not have an answer to or an unclear answer please text Mr. Lique at 3863618505. If a student needs technical support with anything relating to FLVS they should call this number: 800-374-1430 and if they need help with anything relating to their device they should call flagler schools technical support at this number: 386-437-7526. Password resets can usually done on your own by clicking the forgot password link. If you are having trouble with assignments displaying correctly you probably need to download microsoft office. To download microsoft office you will click on the "F" symbol on the top of your laptop and then click install software and then look for microsoft word. When you first open microsoft office it may ask for a user name and password, you can ignore it or if it still gives you issues then you can try your laptop login. If you need to upload a picture for an assignment or if you want to create a graph on paper instead of using a program. You can simply take a picture with your phone, email it to yourself and then upload as you would upload a normal assignment. Students can use this like if they need to reset a module exam or if they have already used their 3 attempts on a quiz: https://docs.google.com/forms/d/1E_zYdoG8mGgIJ8E4ZFES56ucj_5B9ElAzUoNqTAdm9E/viewform?gxids=7628&edit_requested=true. Notes do not need to be submitted for a grade, but are beneficial because they can be used during DBAs, exams and quizzes. If a student is in honors or advanced classes, they need to make sure they also complete those honors specific assignments, even though they are not specifically listed on the pace chart. The notes for ELA are not located on the first page of each lesson, there is a link on my homepage that will take you to all the notes as well as other helpful tools for the class. Collaboration assignments are not required and will eventually become excused, students can ignore. Students can work with their teachers in person most fridays at the iFlagler campus, they need to make sure the paperwork is signed and double check the Schedule, Mr. Lique will be there from 12:00pm to 2:00pm. Link to help videos for specific assignments, students just need to click on the folder for their course and then find the assignment, not all assignments are available and Mr. Lique can make one if needed or the student can make an appointment with Mr. Lique to help with the assignment: https://drive.google.com/drive/folders/1tT0ULsDXjavC_4TE_JCcFR4cYU6Y4j-T?usp=drive_link. If a student is locked out of an exam, they need tp click the exam reset link on the homepage or use this link https://docs.google.com/forms/d/1E_zYdoG8mGgIJ8E4ZFES56ucj_5B9ElAzUoNqTAdm9E/viewform?gxids=7628&edit_requested=true, exams will lock if a student clicks out to a different tab to prevent students from looking up answers. School Phone: 386-447-1520 School Fax: 386-447-1583. Assistant Principal/ESE Administrator Scott Bannon 1703 ESE Staffing Specialist Alyeshia Ali 1175 ESE Support Facilitator Dr. Louis 1704 Information Systems (IS) Bedie Barnes 1702 Principal Erin Quinn 1701 Principal's Secretary/Bookkeeper Taahira Lee 1700 Registrar Taahira Lee 1700 School Counselor Hanna Wolcot 1705.`;
+
+            // Initial greeting message from the bot
+            appendMessage('Hello! I am the Class Help Bot. How can I assist you today?', 'bot');
+
+            // Event listener for the send button
+            sendBtn.addEventListener('click', sendMessage);
+
+            // Event listener for the Enter key on the input field
+            userInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            // Event listener to toggle the chat window (hide/show)
+            toggleChatBtn.addEventListener('click', () => {
+                chatContainer.classList.toggle('hidden');
+            });
+
+            // Function to append a new message to the chat
+            function appendMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
+                messageDiv.textContent = text;
+                chatMessages.appendChild(messageDiv);
+                // Scroll to the bottom of the chat
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Function to handle sending a message
+            async function sendMessage() {
+                const userText = userInput.value.trim();
+                if (userText === '') return;
+
+                // Display the user's message
+                appendMessage(userText, 'user');
+                userInput.value = '';
+
+                // Add a "typing" indicator
+                const typingIndicator = document.createElement('div');
+                typingIndicator.classList.add('message', 'bot-message', 'typing-indicator');
+                typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+                chatMessages.appendChild(typingIndicator);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                try {
+                    const botResponse = await getLLMResponse(userText);
+                    // Remove the typing indicator
+                    chatMessages.removeChild(typingIndicator);
+                    appendMessage(botResponse, 'bot');
+                } catch (error) {
+                    console.error("Error fetching LLM response:", error);
+                    chatMessages.removeChild(typingIndicator);
+                    appendMessage("I'm sorry, I ran into a problem. Please try again or rephrase your question.", 'bot');
+                }
+            }
+
+            // Function to get a response from the LLM
+            async function getLLMResponse(userText) {
+                // Construct the prompt for the LLM
+                // We give the LLM the knowledge base and a specific instruction
+                const prompt = `You are a helpful class assistant. Use the following information to answer the user's question. If you cannot find the answer in the provided text, state that you do not have an answer and suggest they text Mr. Lique at 3863618505.\n\nKnowledge Base:\n${knowledgeBase}\n\nUser's question:\n${userText}`;
+
+                // Call the Gemini API
+                const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
+                const payload = { contents: chatHistory };
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                
+                let response;
+                let retryCount = 0;
+                const maxRetries = 3;
+                
+                while (retryCount < maxRetries) {
+                    try {
+                        response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (response.ok) {
+                            break; // Success! Exit the retry loop.
+                        }
+                        // Handle specific error codes if necessary, for now, just retry
+                        const errorData = await response.json();
+                        console.error(`Attempt ${retryCount + 1} failed:`, errorData);
+                        retryCount++;
+                        await new Promise(res => setTimeout(res, Math.pow(2, retryCount) * 1000)); // Exponential backoff
+                    } catch (error) {
+                        console.error(`Attempt ${retryCount + 1} failed with network error:`, error);
+                        retryCount++;
+                        await new Promise(res => setTimeout(res, Math.pow(2, retryCount) * 1000)); // Exponential backoff
+                    }
+                }
+
+                if (!response || !response.ok) {
+                    throw new Error("Failed to get a response from the LLM after multiple retries.");
+                }
+
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    return "I'm sorry, I could not find a relevant answer in the information provided.";
+                }
+            }
+        });
+    </script>
+</body>
+</html>
