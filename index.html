@@ -218,7 +218,8 @@
                 // Call the Gemini API
                 const chatHistory = [{ role: "user", parts: [{ text: prompt }] }];
                 const payload = { contents: chatHistory };
-                const apiKey = "";
+                // The API key is now directly inserted here
+                const apiKey = "GEMINI_API_KEY"; // THIS IS WHERE YOUR API KEY GOES
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
                 
                 let response;
